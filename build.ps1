@@ -26,4 +26,4 @@ pyinstaller --onefile --noconsole --name Folder2PDF --clean `
 
 Write-Host ""
 Write-Host "Built: $PSScriptRoot\dist\Folder2PDF.exe"
-Write-Host "Next: copy it to a permanent location, then run install.ps1 -ExePath <path>"
+Write-Host "Next: copy it to a permanent location, then run it."
