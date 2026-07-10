@@ -28,7 +28,9 @@ USAGE (Windows 11: Shift+Right-click or "Show more options")
   2. Right-click empty space in a folder -> same, current folder
   3. Select IMAGE FILES, right-click -> merged into ONE PDF, sorted by name
   4. Run the exe with NO arguments (double-click) -> a window opens; drag image
-     files or folders onto it (or use "加入圖片…"), then pick where to save.
+     files or folders onto it (or use the "Add images" button), then pick where
+     to save. The window also has Register/Remove menu buttons and a language
+     picker.
   Output (modes 1-3): <foldername>.pdf, auto _1, _2 on collision.
     - folder / folder-background mode -> written to the PARENT folder
     - selected-image-files mode       -> written to the images' OWN folder
@@ -53,6 +55,12 @@ FORMATS
 jpg jpeg png tif tiff bmp webp gif. JPEG/opaque images embed losslessly (no
 re-encode). Alpha/transparent images are flattened onto white and embedded as
 lossless PNG. Animated GIF/WebP: first frame only (one page).
+
+LANGUAGE
+UI is localized in English, Japanese, and Chinese. It auto-detects the Windows
+UI language on first run; pick a language in the drop window to override it. The
+choice is saved to %LOCALAPPDATA%\Folder2PDF\lang.txt and applies to every mode
+(drop window, progress dialog, and right-click messages) on the next launch.
 
 UNINSTALL
   Folder2PDF.exe --unregister
