@@ -117,6 +117,29 @@ def t(key, **kw):
     return s.format(**kw) if kw else s
 
 
+def _lang_file():
+    return os.path.join(_appdir(), "lang.txt")
+
+
+def load_lang():
+    """Persisted choice wins; fall back to OS auto-detect."""
+    try:
+        code = open(_lang_file(), encoding="utf-8").read().strip()
+        if code in STRINGS:
+            return code
+    except OSError:
+        pass
+    return _detect_lang()
+
+
+def save_lang(code):
+    try:
+        with open(_lang_file(), "w", encoding="utf-8") as f:
+            f.write(code)
+    except OSError:
+        pass
+
+
 def notify(title, msg, error=False):
     try:
         _u32.MessageBoxW(0, msg, title, MB_ICONERROR if error else MB_ICONINFO)
@@ -385,7 +408,7 @@ def run_drop_window():
     picked = {"imgs": None, "out": None}
     root = TkinterDnD.Tk()
     root.title("Folder to PDF")
-    root.geometry("440x300")
+    root.geometry("440x340")
     root.attributes("-topmost", True)
     zone = tk.Label(root, text=t("drop_here"), relief="ridge", borderwidth=2)
     zone.pack(fill="both", expand=True, padx=16, pady=(16, 8))
@@ -419,11 +442,35 @@ def run_drop_window():
             filetypes=[(t("images_label"), pats)])
         if files:
             choose_and_go(collect_dropped(files))
-    ttk.Button(root, text=t("add_images_btn"), command=browse).pack(pady=(0, 4))
+    add_btn = ttk.Button(root, text=t("add_images_btn"), command=browse)
+    add_btn.pack(pady=(0, 4))
     reg = ttk.Frame(root)
-    reg.pack(pady=(0, 12))
-    ttk.Button(reg, text=t("register_btn"), command=register).pack(side="left", padx=4)
-    ttk.Button(reg, text=t("unregister_btn"), command=unregister).pack(side="left", padx=4)
+    reg.pack(pady=(0, 8))
+    reg_btn = ttk.Button(reg, text=t("register_btn"), command=register)
+    reg_btn.pack(side="left", padx=4)
+    unreg_btn = ttk.Button(reg, text=t("unregister_btn"), command=unregister)
+    unreg_btn.pack(side="left", padx=4)
+
+    # language picker, persisted; overrides OS auto-detect on next launch
+    langs = [("English", "en"), ("日本語", "ja"), ("中文", "zh")]
+    code_by_name = {n: c for n, c in langs}
+    name_by_code = {c: n for n, c in langs}
+    langvar = tk.StringVar(value=name_by_code.get(LANG, "English"))
+
+    def refresh_texts():
+        zone.configure(text=t("drop_here"))
+        add_btn.configure(text=t("add_images_btn"))
+        reg_btn.configure(text=t("register_btn"))
+        unreg_btn.configure(text=t("unregister_btn"))
+
+    def on_lang(*_):
+        global LANG
+        LANG = code_by_name[langvar.get()]
+        save_lang(LANG)
+        refresh_texts()
+    ttk.Combobox(root, textvariable=langvar, values=[n for n, _ in langs],
+                 state="readonly", width=12).pack(pady=(0, 12))
+    langvar.trace_add("write", on_lang)  # after widgets exist: no premature fire
 
     root.mainloop()
 
@@ -499,6 +546,8 @@ def unregister():
 
 
 def main():
+    global LANG
+    LANG = load_lang()
     args = sys.argv[1:]
     if args and args[0].lower().lstrip("-/") == "register":
         return register()
